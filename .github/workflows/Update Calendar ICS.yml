@@ -1,0 +1,47 @@
+name: Update Calendar ICS
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    # 每天 UTC 时间 4:00 运行（对应北京时间 12:00）
+    - cron: '0 4 * * *'
+  workflow_dispatch: # 允许在 GitHub 网页上手动触发
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 赋予 Action 写入代码仓库的权限
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium
+
+      - name: Create directory for ICS files
+        run: mkdir -p ics_files
+
+      - name: Generate ICS files
+        run: python generate_ics.py
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-update schedule ics files"
