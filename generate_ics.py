@@ -80,6 +80,10 @@ def fetch_and_generate_ics():
                 event.description = f"直播间: {room}\n直播间地址: https://live.bilibili.com/30858592"
                 cal_gladys.events.add(event)
                 
+    # 对 Fiona 的日程事件进行排序
+    cal_fiona.events = sorted(cal_fiona.events, key=lambda e: e.begin)
+    # 对 Gladys 的日程事件进行排序
+    cal_gladys.events = sorted(cal_gladys.events, key=lambda e: e.begin)
     # 导出为 ics 文件
     fiona_lines = list(cal_fiona.serialize_iter())
     fiona_lines.insert(1, "X-WR-CALNAME:心宜的直播日程\n")
